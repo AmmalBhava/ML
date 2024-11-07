@@ -1,0 +1,46 @@
+import numpy as np
+from collections import Counter
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
+
+# Euclidean distance calculation
+def euclidean_distance(point1, point2):
+    return np.sqrt(np.sum((point1 - point2) ** 2))
+
+# K-NN algorithm
+def knn_predict(X_train, y_train, X_test, k=3):
+    predictions = []
+    for test_point in X_test:
+        # Compute distances from the test point to all training points
+        distances = [euclidean_distance(test_point, x_train) for x_train in X_train]
+        
+        # Get the indices of the k-nearest neighbors
+        k_indices = np.argsort(distances)[:k]
+        
+        # Get the labels of the k-nearest neighbors
+        k_nearest_labels = [y_train[i] for i in k_indices]
+        
+        # Majority vote for the most common label
+        most_common_label = Counter(k_nearest_labels).most_common(1)[0][0]
+        predictions.append(most_common_label)
+        
+    return np.array(predictions)
+
+# Load Iris dataset
+iris = load_iris()
+X, y = iris.data, iris.target
+
+# Split dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Predict using K-NN with k=3
+k = 3
+y_pred = knn_predict(X_train, y_train, X_test, k=k)
+
+# Calculate accuracy
+accuracy = np.sum(y_pred == y_test) / len(y_test)
+print(f"K-NN classification accuracy with k={k}: {accuracy:.2f}")
+
+# Display test results
+print("\nPredicted labels:", y_pred)
+print("Actual labels:   ", y_test)
