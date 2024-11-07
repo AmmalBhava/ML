@@ -1,0 +1,61 @@
+import pandas as pd
+
+# Load the training data
+data = pd.read_csv('/content/train data.csv')
+attributes = list(data.columns[:-1])  # Assume last column is the target
+
+# Initialize the specific and general boundaries
+def init_boundaries(data):
+    num_attributes = len(data.columns) - 1  # Excluding the target attribute
+    S = ["ϕ"] * num_attributes  # Most specific hypothesis
+    G = [["?"] * num_attributes]  # Most general hypothesis
+    return S, G
+
+def is_consistent(hypothesis, instance):
+    for i, value in enumerate(hypothesis):
+        if value != "?" and value != instance[i]:
+            return False
+    return True
+
+def candidate_elimination(data):
+    # Initialize S and G
+    S, G = init_boundaries(data)
+    
+    for index, row in data.iterrows():
+        instance = row[:-1].tolist()
+        outcome = row[-1]
+        
+        # Positive Example
+        if outcome == 'Yes':
+            # Update S to be consistent with the instance
+            S = [s if s == val else "?" for s, val in zip(S, instance) if s != "ϕ"]
+            
+            # Remove inconsistent hypotheses from G
+            G = [g for g in G if is_consistent(g, instance)]
+        
+        # Negative Example
+        else:
+            # Update G to be more specific with inconsistent hypotheses
+            new_G = []
+            for g in G:
+                if is_consistent(g, instance):
+                    for i in range(len(g)):
+                        if g[i] == "?":
+                            for val in data[attributes[i]].unique():
+                                if val != instance[i]:
+                                    new_g = g[:i] + [val] + g[i+1:]
+                                    if is_consistent(S, new_g):
+                                        new_G.append(new_g)
+                else:
+                    new_G.append(g)
+            G = new_G
+
+        # Remove elements from G that are more specific than S
+        G = [g for g in G if not any(is_consistent(g, s) and g != s for s in [S])]
+    
+    return S, G
+
+# Example usage
+S, G = candidate_elimination(data)
+print("Most Specific Hypothesis (S):", S)
+print("Most General Hypotheses (G):", G)
