@@ -1,0 +1,70 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.datasets import load_iris
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load the Iris dataset
+iris = load_iris()
+X = iris.data  # Features (sepal length, sepal width, petal length, petal width)
+y = iris.target  # Target labels (species)
+
+# Split the dataset into training and testing sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize classifiers
+models = {
+    "Logistic Regression": LogisticRegression(max_iter=200),
+    "K-Nearest Neighbors": KNeighborsClassifier(n_neighbors=3),
+    "Naive Bayes": GaussianNB(),
+    "Support Vector Machine": SVC(),
+    "Decision Tree": DecisionTreeClassifier()
+}
+
+# Train and evaluate each model
+results = {}
+for model_name, model in models.items():
+    # Train the model
+    model.fit(X_train, y_train)
+    
+    # Make predictions
+    y_pred = model.predict(X_test)
+    
+    # Calculate accuracy and other metrics
+    accuracy = accuracy_score(y_test, y_pred)
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    class_report = classification_report(y_test, y_pred, target_names=iris.target_names)
+    
+    results[model_name] = {
+        "Accuracy": accuracy,
+        "Confusion Matrix": conf_matrix,
+        "Classification Report": class_report
+    }
+
+    # Print Results
+    print(f"\n{model_name} Results:")
+    print(f"Accuracy: {accuracy:.2f}")
+    print("\nConfusion Matrix:")
+    print(conf_matrix)
+    print("\nClassification Report:")
+    print(class_report)
+    
+    # Visualize the confusion matrix
+    sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=iris.target_names, yticklabels=iris.target_names)
+    plt.title(f'{model_name} - Confusion Matrix')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.show()
+
+# Optional: Compare accuracies
+accuracies = {model_name: results[model_name]["Accuracy"] for model_name in results}
+print("\nAccuracy Comparison:")
+for model_name, accuracy in accuracies.items():
+    print(f"{model_name}: {accuracy:.2f}")
