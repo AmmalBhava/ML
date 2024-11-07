@@ -1,0 +1,45 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.mixture import GaussianMixture
+from sklearn.datasets import make_blobs
+
+# Generate synthetic data for demonstration
+X, _ = make_blobs(n_samples=300, centers=2, random_state=42)
+
+# Visualize the data
+plt.scatter(X[:, 0], X[:, 1], s=30, color='blue', alpha=0.5)
+plt.title("Generated Data (2 Clusters)")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.show()
+
+# Fit a Gaussian Mixture Model using Expectation-Maximization
+gmm = GaussianMixture(n_components=2, covariance_type='full', random_state=42)
+gmm.fit(X)
+
+# Predict cluster membership for each point
+labels = gmm.predict(X)
+
+# Plot the results
+plt.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', s=30, alpha=0.5)
+plt.title("Gaussian Mixture Model (EM Algorithm) - Clustered Data")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.show()
+
+# Display the learned parameters
+print("Means of the Gaussian Components:")
+print(gmm.means_)
+
+print("\nCovariances of the Gaussian Components:")
+print(gmm.covariances_)
+
+print("\nWeights of the Gaussian Components:")
+print(gmm.weights_)
+
+# Predict the likelihood of each sample
+probabilities = gmm.predict_proba(X)
+
+# Display the first 5 probabilities for each point belonging to each cluster
+print("\nFirst 5 sample probabilities (for each cluster):")
+print(probabilities[:5])
