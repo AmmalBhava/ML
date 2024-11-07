@@ -1,0 +1,74 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.preprocessing import StandardScaler
+
+# Simulating a synthetic dataset for credit score classification
+np.random.seed(42)
+
+# Simulated dataset (features: age, income, credit_history, loan_amount, debt_to_income)
+n_samples = 1000
+age = np.random.randint(18, 70, n_samples)  # Age between 18 and 70
+income = np.random.randint(20000, 100000, n_samples)  # Income between 20k and 100k
+credit_history = np.random.choice([1, 0], n_samples)  # 1 = Good, 0 = Poor
+loan_amount = np.random.randint(5000, 50000, n_samples)  # Loan amount between 5k and 50k
+debt_to_income = np.random.uniform(0, 0.5, n_samples)  # Debt-to-income ratio between 0 and 0.5
+
+# Target: 1 = Good Credit, 0 = Bad Credit
+target = np.random.choice([1, 0], n_samples, p=[0.7, 0.3])  # 70% Good credit, 30% Bad credit
+
+# Creating a DataFrame
+data = pd.DataFrame({
+    'Age': age,
+    'Income': income,
+    'Credit_History': credit_history,
+    'Loan_Amount': loan_amount,
+    'Debt_to_Income': debt_to_income,
+    'Credit_Score': target
+})
+
+# Display the first few rows of the dataset
+print("Sample Data:\n", data.head())
+
+# Features (X) and Target (y)
+X = data.drop(columns=['Credit_Score'])
+y = data['Credit_Score']
+
+# Split the dataset into training and testing sets (80% training, 20% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardizing the features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Initialize the Random Forest Classifier
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+# Train the model
+model.fit(X_train_scaled, y_train)
+
+# Predict the labels on the test set
+y_pred = model.predict(X_test_scaled)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+class_report = classification_report(y_test, y_pred)
+
+# Display the results
+print("\nModel Evaluation:")
+print(f"Accuracy: {accuracy:.2f}")
+print("\nConfusion Matrix:")
+print(conf_matrix)
+print("\nClassification Report:")
+print(class_report)
+
+# Feature Importances (showing how important each feature is for classification)
+feature_importances = model.feature_importances_
+feature_names = X.columns
+print("\nFeature Importance:")
+for feature, importance in zip(feature_names, feature_importances):
+    print(f"{feature}: {importance:.4f}")
